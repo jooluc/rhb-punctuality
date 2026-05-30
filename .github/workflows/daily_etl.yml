@@ -1,0 +1,30 @@
+name: Daily RhB ETL
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Täglich um 06:00 UTC (08:00 Schweizer Zeit)
+  workflow_dispatch:       # Manuell auslösbar über GitHub UI
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Python Setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Dependencies installieren
+        run: pip install -r requirements.txt
+
+      - name: ETL ausführen
+        env:
+          OPENTRANSPORT_API_KEY: ${{ secrets.OPENTRANSPORT_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python scripts/fetch_istdaten.py
